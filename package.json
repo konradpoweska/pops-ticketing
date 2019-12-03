@@ -1,0 +1,29 @@
+{
+  "name": "pops-ticketing",
+  "version": "1.0.0",
+  "description": "Polytech Paris-Sud ET5 Informatique, Projet Génie Logiciel",
+  "main": "app.js",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4",
+    "vue": "^2.6.10",
+    "vue-hot-reload-api": "^2.3.4",
+    "@vue/component-compiler-utils": "^3.0.2",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "scripts": {
+    "build": "parcel build src/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/konradpoweska/pops-ticketing.git"
+  },
+  "author": "La SCEP",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/konradpoweska/pops-ticketing/issues"
+  },
+  "homepage": "https://github.com/konradpoweska/pops-ticketing#readme"
+}
