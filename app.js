@@ -7,8 +7,8 @@ app.use(express.json());
 
 
 // API routes
-const testRoutes = require('./routes/test.js');
-app.use("/api/test", testRoutes);
+const api = require('./api/');
+app.use("/api/", api);
 
 
 // Serve UI content
