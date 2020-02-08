@@ -1,5 +1,8 @@
 <template>
+  <div>
+    <Navbar></Navbar>
     <Tabs></Tabs>
+  </div>
 </template>
 
 <script>
@@ -10,10 +13,12 @@ import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 Vue.use(BootstrapVue);
 
-import Tabs from "./components/tabs.vue";
+import Navbar from "./components/navbar";
+import Tabs from "./components/tabs";
 
 export default Vue.extend({
   components: {
+    Navbar,
     Tabs
   }
 });
