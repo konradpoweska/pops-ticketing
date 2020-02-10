@@ -1,0 +1,23 @@
+[
+  {
+    "name": "Vend Rêve",
+    "priority": false,
+    "email": "contact@vendreve.fr",
+    "locations": [
+      {
+        "name": "Vend Rêve Arcueil",
+        "address": "5 rue du Duciel",
+        "phone": "+33 1 23 45 76 54"
+      }
+    ],
+    "mainLocation": 0,
+    "requesters": [
+      {
+        "name": "Jacques Spareaux",
+        "address": "5 rue du Duciel",
+        "phone": "+33 1 23 45 76 54",
+        "email": "jacques.spareaux@vendreve.fr"
+      }
+    ]
+  }
+]

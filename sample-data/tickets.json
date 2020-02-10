@@ -1,0 +1,27 @@
+[
+  {
+    "_id": 1,
+    "active": true,
+    "title": "Rétablir l'accès",
+    "type": "I",
+    "client": "Vend Rêve",
+    "requester": "Jacques Spareaux",
+    "category": "Software",
+    "description": "Ça marche pas.",
+    "subTickets": [2],
+    "progress": 0.5
+  },
+  {
+    "_id": 2,
+    "active": true,
+    "title": "Réparer un truc",
+    "type": "I",
+    "client": "Vend Rêve",
+    "requester": "Jacques Spareaux",
+    "category": "Réparation",
+    "description": "C'est cassé.",
+    "parentTicket": 1,
+    "weight": 2,
+    "progress": 0.5
+  }
+]

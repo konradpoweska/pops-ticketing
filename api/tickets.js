@@ -1,18 +1,43 @@
 const express = require('express');
 const router = express.Router();
 
+var db;
+require('./db').connection.then(connector => db = connector.db);
+
 
 router.get('/', (req, res) => {
-  res.send({
-    contentDesc: "All tickets."
-  });
+  db.collection('tickets')
+  .find(
+    {
+      parentTicket: {$exists: false},
+      active: true
+    },
+    {
+      projection: {
+        description: false,
+        subTickets: false
+      }
+    }
+  )
+  .toArray()
+  .then(arr => res.send(arr))
+  .catch(err => res.sendStatus(500));
 });
 
 
 router.get('/:id', (req, res) => {
-  res.send({
-    contentDesc: `Ticket ${req.params.id} details.`
-  });
+  db.collection('tickets').aggregate([
+    {$match: { _id: parseInt(req.params.id) }},
+    {$lookup: {
+      from:"tickets",
+      localField:"subTickets",
+      foreignField:"_id",
+      as:"subTickets"
+    }}
+  ])
+  .next()
+  .then(obj => obj ? res.send(obj) : res.sendStatus(404))
+  .catch(err => res.sendStatus(500));
 });
 
 
