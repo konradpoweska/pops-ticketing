@@ -13,6 +13,7 @@
         :is="tab.type"
         v-bind="tab.data"
         @title-update="tab.title = $event"
+        class="mt-4"
       />
 
     </b-tab>
