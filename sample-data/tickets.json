@@ -9,7 +9,10 @@
     "category": "Software",
     "description": "Ça marche pas.",
     "subTickets": [2],
-    "progress": 0.5
+    "progress": 0.5,
+    "created": 1581536729,
+    "last_edited": 1581619634,
+    "creator": "Mira Van Emhyr"
   },
   {
     "_id": 2,
@@ -22,6 +25,9 @@
     "description": "C'est cassé.",
     "parentTicket": 1,
     "weight": 2,
-    "progress": 0.5
+    "progress": 0.5,
+    "created": 1581536735,
+    "last_edited": 1581619642,
+    "creator": "Olgierd Von Everec"
   }
 ]
