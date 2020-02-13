@@ -1,7 +1,7 @@
 [
   {
     "name": "Vend Rêve",
-    "priority": false,
+    "priority": true,
     "email": "contact@vendreve.fr",
     "locations": [
       {
@@ -17,6 +17,27 @@
         "address": "5 rue du Duciel",
         "phone": "+33 1 23 45 76 54",
         "email": "jacques.spareaux@vendreve.fr"
+      }
+    ]
+  },
+  {
+    "name": "NoiceCorp",
+    "priority": false,
+    "email": "contact@noice.net",
+    "locations": [
+      {
+        "name": "Garage",
+        "address": "19 Avenue Stochastique",
+        "phone": "+33 9 23 23 32 99"
+      }
+    ],
+    "mainLocation": 0,
+    "requesters": [
+      {
+        "name": "Charles Hackerman",
+        "address": "19 Avenue Stochastique",
+        "phone": "+33 9 23 23 32 99",
+        "email": "carlosdu91@hotmail.fr"
       }
     ]
   }
