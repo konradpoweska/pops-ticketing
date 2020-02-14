@@ -2,13 +2,20 @@
   <b-container fluid="lg">
 
     <h2>Clients</h2>
-  <div>
+
+    <b-form-input
+              v-model="filter"
+              type="search"
+              id="filterInput"
+              placeholder="Rechercher un client"
+            ></b-form-input>
     <b-table
       striped
       sticky-header
       responsive="sm"
       sort-icon-left
       hover
+      :filter="filter"
       :sort-by.sync="sortBy"
       :items="content"
       :fields="fields"
@@ -23,7 +30,9 @@
       </template>
 
     </b-table>
-  </div>
+
+    <b-button href="#">Ajouter client</b-button>
+  </b-container>
 </template>
 
 <script>
@@ -40,7 +49,8 @@
           {key: 'locations[0].name', label:'Sites'},
           {key: 'requesters[0].name', label:'Demandeurs'}
           ],
-        content: null
+        content: null,
+        filter: null
       }
     },
     created() {
