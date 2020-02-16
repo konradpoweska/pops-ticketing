@@ -1,7 +1,17 @@
+<head>
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap/dist/css/bootstrap.min.css" />
+  <link type="text/css" rel="stylesheet" href="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.css" />
+  <!-- Load Vue followed by BootstrapVueIcons -->
+  <script src="//unpkg.com/vue@latest/dist/vue.min.js"></script>
+  <script src="//unpkg.com/bootstrap-vue@latest/dist/bootstrap-vue-icons.min.js"></script>
+</head>
+
 <template>
   <b-container fluid="lg">
-
-    <h2>Clients</h2>
+    <b-row>
+      <b-col><h2>Clients</h2></b-col>
+      <b-col cols="auto"><b-button href="#">Ajouter client</b-button></b-col>
+    </b-row>
 
     <b-form-input
               v-model="filter"
@@ -9,6 +19,7 @@
               id="filterInput"
               placeholder="Rechercher un client"
             ></b-form-input>
+
     <b-table
       striped
       sticky-header
@@ -22,6 +33,10 @@
       :tbody-tr-class="rowColor"
       :busy="content == null">
 
+      <template v-slot:cell(priority)="data">
+        <b-icon-star></b-icon-star>
+      </template>
+
       <template v-slot:table-busy>
         <div class="text-center my-1">
           <b-spinner class="align-middle"></b-spinner>
@@ -31,7 +46,6 @@
 
     </b-table>
 
-    <b-button href="#">Ajouter client</b-button>
   </b-container>
 </template>
 
@@ -41,8 +55,9 @@
       return {
         sortBy: 'name',
         fields: [
+          {key: '_id', label: 'id'},
+          {key: 'priority', label: 'VIP', sortable: true},
           {key: 'name', label:'Nom', sortable: true},
-          {key: 'priority', label: 'Priorité', sortable: true},
           {key: 'email', label: 'Adresse email'},
           {key: 'phone', label: 'Téléphone'},
           {key: 'address', label: 'Adresse'},
@@ -62,10 +77,16 @@
     },
     methods: {
       rowColor(item, type) {
-        if (!item || type !== 'row') return
-        if (item.priority == true) return 'table-success'
+        if (!item || type !== 'row') return;
+        if (item.priority == true){
+          return 'table-success';
+        }
       }
     }
   }
 
 </script>
+
+<style>
+
+</style>
