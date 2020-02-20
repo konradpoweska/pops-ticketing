@@ -1,22 +1,24 @@
 [
   {
     "_id": 1,
-    "active": true,
+    "status": 1,
     "title": "Rétablir l'accès",
     "type": "I",
     "client": "Vend Rêve",
     "requester": "Jacques Spareaux",
     "category": "Software",
     "description": "Ça marche pas.",
+    "parentTicket": null,
+    "weight": null,
     "subTickets": [2],
     "progress": 0.5,
     "created": 1581536729,
-    "last_edited": 1581619634,
+    "lastEdit": 1581619634,
     "creator": "Mira Van Emhyr"
   },
   {
     "_id": 2,
-    "active": true,
+    "status": 2,
     "title": "Réparer un truc",
     "type": "I",
     "client": "Vend Rêve",
@@ -25,9 +27,27 @@
     "description": "C'est cassé.",
     "parentTicket": 1,
     "weight": 2,
+    "subTickets": [],
     "progress": 0.5,
     "created": 1581536735,
-    "last_edited": 1581619642,
+    "lastEdit": 1581619642,
     "creator": "Olgierd Von Everec"
+  },
+  {
+    "_id" : 3,
+    "status": 1,
+    "title" : "Réparer machine",
+    "type" : "I",
+    "client" : "Vend Rêve",
+    "requester" : "Jacques Spareaux",
+    "category" : "Software",
+    "description" : "La machine, elle est cassée :(",
+    "parentTicket": null,
+    "weight": null,
+    "subTickets" : [],
+    "progress" : 0.8,
+    "created" : 1581536756,
+    "lastEdit" : 1581619689,
+    "creator" : "Régis El Arakh"
   }
 ]

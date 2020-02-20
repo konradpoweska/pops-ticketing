@@ -9,8 +9,7 @@ router.get('/', (req, res) => {
   db.collection('tickets')
   .find(
     {
-      parentTicket: {$exists: false},
-      active: true
+      parentTicket: null
     },
     {
       projection: {
