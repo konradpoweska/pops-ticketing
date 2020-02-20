@@ -1,0 +1,95 @@
+<template>
+  <b-container fluid="lg">
+
+    <b-row class="mb-3">
+      <b-col><h2>Tickets</h2></b-col>
+      <b-col class="text-right">
+        <b-button variant="primary" @click="newTicket"><b>+</b> Nouveau</b-button>
+      </b-col>
+    </b-row>
+
+    <b-table
+      :fields="fields"
+      :items="tickets"
+      responsive="sm"
+      primary-key="_id"
+      @row-dblclicked="dblclicked"
+      :busy="tickets == null"
+      sort-icon-left
+      hover
+      tbody-tr-class="clickable"
+    >
+
+      <!-- <template v-slot:cell(id)="data">
+        #{{ data.item._id }} - {{ data.item.title }}
+      </template> -->
+
+      <template v-slot:cell(progress)="data">
+        <b-progress :value="data.value" max=1 show-progress class="mt-1" style="min-width: 100px;"></b-progress>
+      </template>
+
+      <!-- <template v-slot:thead-top>
+        <td v-for="field in fields" :key="field.key">
+          <b-form-input
+            v-if="filter.hasOwnProperty(field.key)"
+            v-model="filter[field.key]"
+            :placeholder="`Filtre ${field.label}`"
+            style="max-width: 200px; min-width: 100px;"
+          ></b-form-input>
+        </td>
+      </template> -->
+
+      <template v-slot:table-busy>
+        <div class="text-center my-1">
+          <b-spinner class="align-middle"></b-spinner>
+          <strong>Loading...</strong>
+        </div>
+      </template>
+
+    </b-table>
+
+    <!-- <div class="code" v-html="tickets"></div> -->
+
+  </b-container>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      tickets: null,
+      fields: [
+        { key: "_id", label: "Id", sortable: true },
+        { key: "title", label: "Nom" },
+        { key: 'progress', label: 'Progrès' },
+        { key: "client", label: "Client", sortable: true },
+        { key: "requester", label: 'Demandeur' }
+      ]
+    }
+  },
+  created() {
+    fetch('/api/tickets')
+      .then(res => res.json())
+      .then(arr => {
+        this.tickets = arr;
+      });
+  },
+  methods: {
+    dblclicked(item, index, event) {
+      this.$root.$emit('open-tab', {type: 'Ticket', data: {baseTicket: {_id: item._id}}});
+    },
+    newTicket() {
+      this.$root.$emit('open-tab', {type: 'Ticket', data: {baseTicket: {
+        requester: undefined // required to make property reactive...
+      }}});
+    }
+  }
+}
+</script>
+
+
+<style>
+.clickable {
+  cursor: pointer;
+}
+</style>

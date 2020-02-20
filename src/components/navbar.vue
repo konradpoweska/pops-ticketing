@@ -11,7 +11,6 @@
 
         <b-navbar-nav>
           <b-nav-item @click="$root.$emit('open-tab', {type: 'Tickets'})">Tickets</b-nav-item>
-          <b-nav-item @click="$root.$emit('open-tab', {type: 'Ticket', data: {id: 2}})">Example de ticket</b-nav-item>
           <b-nav-item @click="$root.$emit('open-tab', {type: 'Clients'})">Clients</b-nav-item>
         </b-navbar-nav>
 

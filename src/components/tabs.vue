@@ -22,9 +22,9 @@
 </template>
 
 <script>
-import Tickets from './tickets';
-import Ticket from './ticket';
-import Clients from './clients';
+import Tickets from '~/views/tickets';
+import Ticket from '~/views/ticket';
+import Clients from '~/views/clients';
 
 export default {
 
