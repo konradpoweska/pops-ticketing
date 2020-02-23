@@ -32,6 +32,16 @@ router.get('/:id', (req, res) => {
       localField:"subTickets",
       foreignField:"_id",
       as:"subTickets"
+    }},
+    {$lookup: {
+      from: 'tickets',
+      localField: 'parentTicket',
+      foreignField: '_id',
+      as: 'parentTicket'
+    }},
+    {$unwind: {
+      path: "$parentTicket",
+      preserveNullAndEmptyArrays: true
     }}
   ])
   .next()
@@ -49,10 +59,29 @@ function getNextSequence(name) {
 }
 
 
+async function handleNewRequester(ticket) {
+  if(typeof ticket.requester === 'object') {
+    // TODO: check if requester doesn't already exist ?
+
+    let response = await db.collection('clients').updateOne(
+      { name: ticket.client },
+      { $push: {requesters: ticket.requester } }
+    );
+
+    if(response.result.nModified != 1)
+      throw new Error("Couldn't create a new requester from ticket.");
+
+    ticket.requester = ticket.requester.name;
+  }
+}
+
+
 router.post('/new', async (req, res) => { // async for await and get the id
-  console.log(req.body);
+
+  await handleNewRequester(req.body);
+
   db.collection('tickets').insertOne({
-    _id: await getNextSequence("ticketId"), // await for promise to get the id 
+    _id: await getNextSequence("ticketId"), // await for promise to get the id
     status: 1,
     title: req.body.title,
     type: req.body.type,
@@ -65,7 +94,7 @@ router.post('/new', async (req, res) => { // async for await and get the id
     subTickets: [],
     progress: 0,
     created: Math.floor(Date.now() / 1000),
-    last_edited: Math.floor(Date.now() / 1000),
+    lastEdit: Math.floor(Date.now() / 1000),
     creator: "hardcode" // TODO recup token et nom de l'utilisateur
   })
   .then(result => {
@@ -75,7 +104,7 @@ router.post('/new', async (req, res) => { // async for await and get the id
       res.sendStatus(500);
     }
   })
-  
 });
+
 
 module.exports = router;
