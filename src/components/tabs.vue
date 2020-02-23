@@ -13,7 +13,7 @@
         :is="tab.type"
         v-bind="tab.data"
         @title-update="tab.title = $event"
-        class="mt-4"
+        class="mt-3"
       />
 
     </b-tab>
@@ -22,6 +22,7 @@
 </template>
 
 <script>
+import isEqual from 'lodash/isEqual';
 import Tickets from '~/views/tickets';
 import Ticket from '~/views/ticket';
 import Clients from '~/views/clients';
@@ -40,10 +41,8 @@ export default {
 
     openTab(tab) {
       for(let i=0; i < this.tabs.length; i++)
-        if(tab.type === this.tabs[i].type && JSON.stringify(tab.data) === JSON.stringify(this.tabs[i].data)) {
-          this.tabId = i;
-          return;
-        }
+        if(tab.type === this.tabs[i].type && isEqual(tab.data, this.tabs[i].data))
+          return this.tabId = i;
 
       this.tabs.splice(this.tabId+1, 0, {...tab, id: this.tabIt++, title: tab.type});
       setTimeout(()=>this.tabId++, 100); // TODO: find a better way to jump to freshly created tab...
@@ -72,7 +71,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 .nav-tabs {
   padding: 0 .4rem;
   min-height: 0.5rem; /* Adds space between horizontal line and navbar if no tabs */

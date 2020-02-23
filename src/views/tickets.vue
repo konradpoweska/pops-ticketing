@@ -1,9 +1,10 @@
 <template>
   <b-container fluid="lg">
 
-    <b-row class="mb-3">
+    <b-row class="mb-2">
       <b-col><h2>Tickets</h2></b-col>
       <b-col class="text-right">
+        <b-button variant="secondary" @click="fetch"><b-icon-arrow-clockwise /></b-button>
         <b-button variant="primary" @click="newTicket"><b>+</b> Nouveau</b-button>
       </b-col>
     </b-row>
@@ -20,24 +21,9 @@
       tbody-tr-class="clickable"
     >
 
-      <!-- <template v-slot:cell(id)="data">
-        #{{ data.item._id }} - {{ data.item.title }}
-      </template> -->
-
       <template v-slot:cell(progress)="data">
         <b-progress :value="data.value" max=1 show-progress class="mt-1" style="min-width: 100px;"></b-progress>
       </template>
-
-      <!-- <template v-slot:thead-top>
-        <td v-for="field in fields" :key="field.key">
-          <b-form-input
-            v-if="filter.hasOwnProperty(field.key)"
-            v-model="filter[field.key]"
-            :placeholder="`Filtre ${field.label}`"
-            style="max-width: 200px; min-width: 100px;"
-          ></b-form-input>
-        </td>
-      </template> -->
 
       <template v-slot:table-busy>
         <div class="text-center my-1">
@@ -47,8 +33,6 @@
       </template>
 
     </b-table>
-
-    <!-- <div class="code" v-html="tickets"></div> -->
 
   </b-container>
 </template>
@@ -68,15 +52,19 @@ export default {
     }
   },
   created() {
-    fetch('/api/tickets')
-      .then(res => res.json())
-      .then(arr => {
-        this.tickets = arr;
-      });
+    this.$root.$on('refresh-tickets', this.fetch);
+    this.fetch();
   },
   methods: {
+    fetch() {
+      fetch('/api/tickets')
+        .then(res => res.json())
+        .then(arr => {
+          this.tickets = arr;
+        });
+    },
     dblclicked(item, index, event) {
-      this.$root.$emit('open-tab', {type: 'Ticket', data: {baseTicket: {_id: item._id}}});
+      this.$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: item._id } } });
     },
     newTicket() {
       this.$root.$emit('open-tab', {type: 'Ticket', data: {baseTicket: {

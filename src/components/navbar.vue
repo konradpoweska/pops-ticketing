@@ -31,7 +31,7 @@
 </template>
 
 
-<style>
+<style scoped>
 .navbar {
   padding-bottom: 0.1rem; /* Brings tabs closer */
 }
