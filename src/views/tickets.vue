@@ -9,48 +9,18 @@
       </b-col>
     </b-row>
 
-    <b-table
-      :fields="fields"
-      :items="tickets"
-      responsive="sm"
-      primary-key="_id"
-      @row-dblclicked="dblclicked"
-      :busy="tickets == null"
-      sort-icon-left
-      hover
-      tbody-tr-class="clickable"
-    >
-
-      <template v-slot:cell(progress)="data">
-        <b-progress :value="data.value" max=1 show-progress class="mt-1" style="min-width: 100px;"></b-progress>
-      </template>
-
-      <template v-slot:table-busy>
-        <div class="text-center my-1">
-          <b-spinner class="align-middle"></b-spinner>
-          <strong>Loading...</strong>
-        </div>
-      </template>
-
-    </b-table>
+    <TicketsTable :items="tickets"></TicketsTable>
 
   </b-container>
 </template>
 
 <script>
+import TicketsTable from "~/components/tickets-table"
+
 export default {
-  data() {
-    return {
-      tickets: null,
-      fields: [
-        { key: "_id", label: "Id", sortable: true },
-        { key: "title", label: "Nom" },
-        { key: 'progress', label: 'Progrès' },
-        { key: "client", label: "Client", sortable: true },
-        { key: "requester", label: 'Demandeur' }
-      ]
-    }
-  },
+  data: () => ({
+    tickets: null,
+  }),
   created() {
     this.$root.$on('refresh-tickets', this.fetch);
     this.fetch();
@@ -63,21 +33,10 @@ export default {
           this.tickets = arr;
         });
     },
-    dblclicked(item, index, event) {
-      this.$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: item._id } } });
-    },
     newTicket() {
-      this.$root.$emit('open-tab', {type: 'Ticket', data: {baseTicket: {
-        requester: undefined // required to make property reactive...
-      }}});
+      this.$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: null } } });
     }
-  }
+  },
+  components: { TicketsTable }
 }
 </script>
-
-
-<style>
-.clickable {
-  cursor: pointer;
-}
-</style>
