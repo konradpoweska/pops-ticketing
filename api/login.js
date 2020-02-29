@@ -9,7 +9,7 @@ const secret = process.env.SECRET || 'devtest';
 
 router.post('/', (req, res) => {
 
-    console.log("Authenticating '"+req.body.username+"'");
+    // console.log("Authenticating '"+req.body.username+"'");
 
     var username = req.body.username;
     var password = req.body.password;
@@ -20,20 +20,28 @@ router.post('/', (req, res) => {
             username: username
         }
     ).then(doc =>{
-        
+
         //When we find him, check if the password in the request, and the password in the DB match
         if(doc && doc.password == password){
-            console.log("Authorized "+username+" with level "+doc.auth_level);
+            console.log("Authorized "+username+" with level "+doc.rights);
 
             //If they do, send the token
             jwt.sign(
-                { authorization_level: doc.auth_level, username: username }
+                { rights: doc.rights, username: username }
                 , secret, (err, token) => {
                     if(err){
                         console.log(err);
                         res.sendStatus(500);
                     } else {
-                        res.send(token);
+                        res.send({
+                            userData: {
+                                username: doc.username,
+                                email: doc.email,
+                                name: doc.name,
+                                rights: doc.rights
+                            },
+                            token
+                        });
                     }
             });
 
