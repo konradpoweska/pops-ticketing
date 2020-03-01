@@ -1,0 +1,42 @@
+{"$jsonSchema": {
+  "bsonType": "object",
+  "required": ["name", "priority", "email", "locations", "mainLocation", "requesters"],
+  "additionalProperties": false,
+  "properties": {
+    "_id": {},
+    "name": { "bsonType": "string" },
+    "priority": { "bsonType": "bool" },
+    "email": { "bsonType": "string" },
+    "mainLocation": { "bsonType": "int" },
+
+    "locations": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "required": ["name", "phone", "address"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "bsonType": "string" },
+          "phone": { "bsonType": "string" },
+          "address": { "bsonType": "string" }
+        }
+      }
+    },
+
+    "requesters": {
+      "bsonType": "array",
+      "items": {
+        "bsonType": "object",
+        "required": ["name", "email", "phone", "address"],
+        "additionalProperties": false,
+        "properties": {
+          "name": { "bsonType": "string" },
+          "email": { "bsonType": "string" },
+          "phone": { "bsonType": "string" },
+          "address": { "bsonType": "string" }
+        }
+      }
+    }
+
+  }
+}}

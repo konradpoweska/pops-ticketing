@@ -9,7 +9,8 @@ router.get('/', (req, res) => {
   db.collection('tickets')
   .find(
     {
-      parentTicket: null
+      // TODO: custom filters supplied by client
+      parentTicket: { $exists: false }
     },
     {
       projection: {
