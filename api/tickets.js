@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const e = require('./httpErrors');
 
 var db;
 require('./db').connection.then(connector => db = connector.db);
@@ -25,87 +26,152 @@ router.get('/', (req, res) => {
 });
 
 
+
 router.get('/:id', (req, res) => {
   db.collection('tickets').aggregate([
     {$match: { _id: parseInt(req.params.id) }},
-    {$lookup: {
-      from:"tickets",
-      localField:"subTickets",
-      foreignField:"_id",
-      as:"subTickets"
-    }},
-    {$lookup: {
+    { $lookup: {
+      from: 'tickets',
+      localField: 'subTickets._id',
+      foreignField: '_id',
+      as: 'joins.subTickets'
+    } },
+    { $lookup: {
       from: 'tickets',
       localField: 'parentTicket',
       foreignField: '_id',
-      as: 'parentTicket'
-    }},
-    {$unwind: {
-      path: "$parentTicket",
-      preserveNullAndEmptyArrays: true
-    }}
+      as: 'joins.parentTicket'
+    } }
   ])
   .next()
+  .then(doc => {
+    if(doc === null) return null;
+    const joins = doc.joins;
+    delete doc.joins;
+    joins.parentTicket = joins.parentTicket[0];
+    return { doc, joins };
+  })
   .then(obj => obj ? res.send(obj) : res.sendStatus(404))
   .catch(err => res.sendStatus(500));
 });
 
 
-function getNextSequence(name) {
-  return db.collection('counters').findOneAndUpdate(
-    { _id: name },
-    { $inc: { seq: 1 } }
-  )
-  .then(res => res.value.seq);
-}
+async function updateParent(idToUpdate) {
+  /* Function to recursively update progress and lastEdit of parent tickets. */
+  // TODO: update status as well
+  const updatedTickets = [];
 
+  while(idToUpdate != null) {
 
-async function handleNewRequester(ticket) {
-  if(typeof ticket.requester === 'object') {
-    // TODO: check if requester doesn't already exist ?
+    const toUpdate = await db.collection('tickets').aggregate([
+      { $match: { _id: idToUpdate } },
+      { $unwind: { path: "$subTickets" } },
+      { $lookup: {
+        from: 'tickets',
+        localField: 'subTickets._id',
+        foreignField: '_id',
+        as: 'subTickets.doc'
+      } },
+      { $unwind: { path: '$subTickets.doc' } },
+      { $project: {
+        parentTicket: true,
+        lastEdit: true,
+        lastEditSub: "$subTickets.doc.lastEdit",
+        totalWeight: "$subTickets.weight",
+        totalProgress: { $multiply: ["$subTickets.weight", "$subTickets.doc.progress"] }
+      } },
+      { $group: {
+        _id: "$_id",
+        parentTicket: { $first: "$parentTicket" },
+        lastEdit: { $first: "$lastEdit" },
+        lastEditSub: { $max: "$lastEditSub" },
+        totalWeight: { $sum: "$totalWeight" },
+        totalProgress: { $sum: "$totalProgress" }
+      } },
+      { $project: {
+        parentTicket: true,
+        lastEdit: { $max: ["$lastEdit", "$lastEditSub"] },
+        progress: { $divide: ["$totalProgress", "$totalWeight"] }
+      } }
+      // TODO: check if doable with $merge
+    ]).next();
 
-    let response = await db.collection('clients').updateOne(
-      { name: ticket.client },
-      { $push: {requesters: ticket.requester } }
+    await db.collection('tickets').updateOne(
+      { _id: toUpdate._id },
+      { $set: {
+        progress: toUpdate.progress,
+        lastEdit: toUpdate.lastEdit
+      } }
     );
 
-    if(response.result.nModified != 1)
-      throw new Error("Couldn't create a new requester from ticket.");
+    updatedTickets.push({
+      _id: toUpdate._id,
+      progress: toUpdate.progress,
+      lastEdit: toUpdate.lastEdit
+    })
 
-    ticket.requester = ticket.requester.name;
+    idToUpdate = toUpdate.parentTicket;
   }
+
+  return updatedTickets;
 }
 
 
 router.post('/new', async (req, res) => { // async for await and get the id
+  try {
+    const input = req.body.ticket;
+    if(!input) throw new e.BadRequestError();
 
-  await handleNewRequester(req.body);
+    if(input.subTickets) // type 1: ticket with sub-tickets
+      input.progress = 0.0;
 
-  db.collection('tickets').insertOne({
-    _id: await getNextSequence("ticketId"), // await for promise to get the id
-    status: 1,
-    title: req.body.title,
-    type: req.body.type,
-    client: req.body.client,
-    requester: req.body.requester,
-    category: req.body.category,
-    description: req.body.description,
-    parentTicket: req.body.parentTicket,
-    weight: req.body.weight,
-    subTickets: [],
-    progress: 0,
-    created: Math.floor(Date.now() / 1000),
-    lastEdit: Math.floor(Date.now() / 1000),
-    creator: "hardcode" // TODO recup token et nom de l'utilisateur
-  })
-  .then(result => {
-    if(result.insertedCount == 1){
-      res.send(result.ops[0]);
-    } else{
-      res.sendStatus(500);
+    else // type 2: need to parse supplied date fields
+      for(let prop of ['estimatedDuration', 'plannedIntervention', 'actualDuration', 'counterStart'])
+        if(input[prop])
+          input[prop] = new Date(input[prop]);
+
+
+    const hasParentTicket = input.hasOwnProperty('parentTicket');
+
+    if(hasParentTicket) {
+      let parentTicket = await db.collection('tickets').findOne({ _id: input.parentTicket }, { subTickets: true });
+      if(!parentTicket) throw new e.BadRequestError("Parent ticket not found");
+      if(!parentTicket.subTickets) throw new e.BadRequestError("Parent ticket cannot have sub-tickets");
     }
-  })
+
+    const newId = (await db.collection('counters').findOneAndUpdate({ _id: 'ticketId' }, { $inc: { seq: 1 } })).value.seq;
+
+    input._id = newId;
+    input.created = new Date();
+    input.lastEdit = new Date();
+    input.status = "OPEN";
+    input.creator = "Unknown (Yet)";
+
+    const bulkOps = [ { insertOne: { document: input}} ];
+
+    if(hasParentTicket) bulkOps.push({
+      updateOne: {
+        filter: { _id: input.parentTicket },
+        update: { $push: { subTickets: { _id: newId, weight: 1 } } }
+      }
+    });
+
+    await db.collection('tickets').bulkWrite(bulkOps);
+
+    const updatedTickets = hasParentTicket ? await updateParent(input.parentTicket) : [];
+
+    res.send({ ok: true, newTicket: input, updatedTickets });
+
+  }
+  catch(err) {
+    if(err.code == 121) res.status(400); // Mongo Validation Error
+    else if(err instanceof e.HttpError) res.status(err.httpCode);
+    else { res.status(500); console.log(err); }
+
+    res.json({ ok: false, reason: err.message });
+  }
 });
+
 
 
 module.exports = router;
