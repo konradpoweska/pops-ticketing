@@ -1,5 +1,5 @@
 <template>
-  <b-container fluid="sm" class="login-form">
+  <div class="login-form">
     <p class="logo">POPS1920</p>
     <b-form-group label="Identifiant">
       <b-form-input v-model="username"></b-form-input>
@@ -9,8 +9,7 @@
     </b-form-group>
     <b-button variant="success" v-on:click="connect" class="btnConnect">Se connecter</b-button>
     <p class="mdpOublie" v-on:click="resetmdp">Mot de passe oublié?</p>
-  
-  </b-container>
+  </div>
 </template>
 
 <script>
@@ -58,12 +57,16 @@ export default {
 
 <style scoped>
 .login-form{
+  margin-top: 10%;
+  margin-left: auto;
+  margin-right: auto;
+  vertical-align: 50%;
   background-color:white;
   font-size: 1rem;
   border: 1px solid #fff;
   padding: 30px;
   border-radius: 10px;
-  box-shadow: 0px 0px 10px 0px #000;
+  box-shadow: 0px 0px 3px 0px #000;
   width: 400px;
 }
 .logo {
