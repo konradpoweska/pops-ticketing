@@ -1,12 +1,15 @@
 <template>
-  <div>
+  <div v-if="store.user">
     <Navbar></Navbar>
     <Tabs></Tabs>
   </div>
+  <Authenticate v-else></Authenticate>
 </template>
 
 <script>
 import Vue from "vue";
+import Authenticate from "./views/authenticate.vue";
+import store from '~/store';
 
 import {BootstrapVue, BootstrapVueIcons} from 'bootstrap-vue';
 import 'bootstrap/dist/css/bootstrap.css';
@@ -20,7 +23,13 @@ import Tabs from "./components/tabs";
 export default Vue.extend({
   components: {
     Navbar,
-    Tabs
+    Tabs,
+    Authenticate,
+  },
+  data(){
+    return{
+      store,
+    }
   }
 });
 </script>
