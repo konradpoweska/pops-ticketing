@@ -4,8 +4,9 @@ class Store {
   constructor() {
     this.timestamps = {};
     this.fetchClients();
-    this.user= {"username":"arnaud.lauperateur","email":"arnaud.lauperateur@pops1920.fr","name":"Aurnaud LAUPERATEUR","rights":["OPERATOR"]};
-    this.token ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyaWdodHMiOlsiT1BFUkFUT1IiXSwidXNlcm5hbWUiOiJhcm5hdWQubGF1cGVyYXRldXIiLCJpYXQiOjE1ODMxNTc2Njh9.pKkUhP-xd_KNLcrX7HYyKVZ0XrwvGHrP2QsTaYViEP0";
+    this.user = undefined;
+    //this.user= {"username":"arnaud.lauperateur","email":"arnaud.lauperateur@pops1920.fr","name":"Aurnaud LAUPERATEUR","rights":["OPERATOR"]};
+    //this.token ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyaWdodHMiOlsiT1BFUkFUT1IiXSwidXNlcm5hbWUiOiJhcm5hdWQubGF1cGVyYXRldXIiLCJpYXQiOjE1ODMxNTc2Njh9.pKkUhP-xd_KNLcrX7HYyKVZ0XrwvGHrP2QsTaYViEP0";
   };
 
   get clients() {
