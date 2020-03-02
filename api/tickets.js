@@ -171,6 +171,62 @@ router.post('/new', async (req, res) => { // async for await and get the id
     res.json({ ok: false, reason: err.message });
   }
 });
+/*
+_id=this.filters.idTicket;
+status=this.filters.status;
+created=this.filters.startDate OU {
+  startDate=this.filters.startDate;
+  endDate=this.filters.endDate;
+}
+clients=this.filters.client OU client=this.filters.client[0],
+requester=this.filters.requester
+*/
+router.post("/search", async (req, res) => {
+  let query = {};
+  //console.log(req.body);
+  if(req.body.hasOwnProperty("_id")){
+    query._id = parseInt(req.body._id);
+  }
+  if(req.body.hasOwnProperty("status")){
+    let int_status = parseInt(req.body.status);
+    // 'OPEN', 'IN_PROGRESS', 'COMPLETED', 'CLOSED_SUCCESS', 'CLOSED_ABORTED', 'DELETED'
+    if(int_status == 1){
+      query.status = 'OPEN';
+    } else if(int_status == 2){
+      query.status = {$in: ['IN_PROGRESS', 'COMPLETED']};
+    } else {
+      query.status = {$in: ['CLOSED_SUCCESS', 'CLOSED_ABORTED', 'DELETED']};
+    }
+  }
+  if(req.body.hasOwnProperty("created")){
+    query.created = req.body.created;
+  }
+  else if(req.body.hasOwnProperty("startDate")){
+    query.created = {$gte: req.body.startDate, $lte: req.body.endDate};
+  }
+  if(req.body.hasOwnProperty("clients")){
+    query.client = {$in: req.body.clients};
+  }
+  if(req.body.hasOwnProperty("requester")){
+    query.requester = req.body.requester;
+  }
+  //console.log(query);
+  db.collection('tickets').find(
+    query,
+    {
+      projection: {
+        description: false,
+        subTickets: false
+      }
+    }
+  )
+  .toArray()
+  .then(arr => {
+    res.send(arr);
+    //console.log(arr);
+  })
+  .catch(err => res.sendStatus(500));
+});
 
 
 
