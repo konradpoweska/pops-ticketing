@@ -4,16 +4,40 @@
     <h2 v-text="this.formattedTitle"></h2>
 
     <div class="mb-3">
-      <div v-if="!isNew">
-        Créé le {{ new Date(ticket.created).toLocaleString('fr') }} par {{ ticket.creator }}.<br/>
-        Dernière modification le {{ new Date(ticket.lastEdit).toLocaleString('fr') }}.
-      </div>
-      <div v-if="ticket.parentTicket">
-        Ticket parent&nbsp;:
-        <a href="#" @click="$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: ticket.parentTicket._id } } })">
-          #{{ ticket.parentTicket._id }} - {{ ticket.parentTicket.title }}
-        </a>
-      </div>
+      <b-row>
+        <b-col>
+          <div v-if="!isNew">
+            Créé le {{ new Date(ticket.created).toLocaleString('fr') }} par {{ ticket.creator }}.<br/>
+            Dernière modification le {{ new Date(ticket.lastEdit).toLocaleString('fr') }}.
+          </div>
+
+        <div v-if="ticket.parentTicket">
+          Ticket parent&nbsp;:
+          <a href="#" @click="$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: ticket.parentTicket._id } } })">
+            #{{ ticket.parentTicket._id }} - {{ ticket.parentTicket.title }}
+          </a>
+        </div>
+        <div v-if="ticket.status=='OPEN'">
+          Statut du ticket : <b-badge variant="warning">OUVERT</b-badge>
+        </div>
+        <div v-if="ticket.status=='IN_PROGRESS'">
+          Statut du ticket : <b-badge variant="primary">EN COURS</b-badge>
+        </div>
+        <div v-if="ticket.status=='COMPLETED' || ticket.progress==1">
+          Statut du ticket : <b-badge variant="success">TERMINÉ</b-badge>
+        </div>
+        <div v-if="ticket.status=='CLOSED_SUCCESS' || ticket.status=='CLOSED_ABORTED' || ticket.status=='DELETED'">
+          Statut du ticket : <b-badge variant="secondary">FERMÉ</b-badge>
+        </div>
+      </b-col>
+      <b-col class="text-right">
+        <b-dropdown variant="danger" text="Fermer le ticket">
+          <b-dropdown-item-button @click="ticket.status='CLOSED_SUCCESS'">Tâche effectuée</b-dropdown-item-button>
+          <b-dropdown-item-button @click="ticket.status='CLOSED_ABORTED'">Tâche abandonnée</b-dropdown-item-button>
+          <b-dropdown-item-button @click="ticket.status='DELETED'">Autre</b-dropdown-item-button>
+        </b-dropdown>
+      </b-col>
+    </b-row>
     </div>
 
     <div class="mb-4">
@@ -155,7 +179,7 @@
         </b-col>
         <b-col>
           <b-form-group label="Technicien">
-            <b-form-select></b-form-select>
+            <b-form-select v-model="technician" :options="techs.map(e => e.name)"></b-form-select>
           </b-form-group>
         </b-col>
       </b-row>
@@ -214,9 +238,11 @@ export default {
       ticketWithSubTickets: undefined,
       newRequester: {},
       subTicketsTableFields,
+      techs: undefined,
+      technician: undefined
     }
   },
-  created() { this.initTicket(); },
+  created() { this.initTicket(); this.technicians();},
   computed: {
     isNew() {
       return this.baseTicket._id == null;
@@ -240,6 +266,13 @@ export default {
     },
     currentRequester() {
       if(this.currentClient) for(let r of this.currentClient.requesters) if(r.name == this.ticket.requester) return r;
+    },
+    technicians(){
+      fetch('/api/users/technicians')
+      .then(res => res.json())
+      .then(arr => {
+        this.techs = arr;
+      });
     }
   },
   methods: {
@@ -260,11 +293,19 @@ export default {
     },
     updateTabTitle() { this.$emit('title-update', this.formattedTitle); },
     save() {
+    },
+    updateStatus() {
+      if(this.technician!="" && this.technician!=undefined){
+        this.ticket.status='IN_PROGRESS';
+      }
+      if(this.ticket.progress==1) this.ticket.status='COMPLETED';
     }
   },
   watch: {
     "ticket.title": 'updateTabTitle',
     "ticket._id": 'updateTabTitle',
+    "ticket.progress": 'updateStatus',
+    "technician": 'updateStatus',
   },
   components: {
     EditForm,
