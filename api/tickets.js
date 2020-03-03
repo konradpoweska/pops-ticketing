@@ -184,6 +184,12 @@ requester=this.filters.requester
 router.post("/search", async (req, res) => {
   let query = {};
   //console.log(req.body);
+  if(!req.body.hasOwnProperty("subTickets")){
+    query.parentTicket = {$exists: false};
+  }
+  if(req.body.hasOwnProperty("technician")){
+    query.technician = req.body.technician;
+  }
   if(req.body.hasOwnProperty("_id")){
     query._id = parseInt(req.body._id);
   }
