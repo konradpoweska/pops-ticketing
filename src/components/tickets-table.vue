@@ -44,7 +44,7 @@ const fields = [
     key: "lastEdit",
     label: 'Dernière modification',
     sortable: true,
-    formatter: v => new Date(v*1000).toLocaleString('fr')
+    formatter: v => new Date(v).toLocaleString('fr')
   },
 ];
 Object.freeze(fields);
