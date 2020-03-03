@@ -41,18 +41,40 @@ router.get('/:id', (req, res) => {
 
 
 
-router.post('/new', async(req, res) => {
+router.post('/new', async (req, res) => {
   const newUser = req.body.user;
 
   //if(login.handleResponse(req, res, login.adminLevel))
-    //return;
+  //return;
+  try {
+    let o = await db.collection('users').insertOne(newUser);
 
-  db.collection('users').insertOne(newUser)
-  .then(o => res.send({ ok: true, newUser: o.ops[0]}))
-  .catch(err =>
+    if (newUser.technicians) {
+      await db.collection('users').updateMany({
+        _id: {
+          $in: newUser.technicians.map(id => ObjectId(id))
+        }
+      }, {
+        $set: {
+          manager: newUser._id
+        }
+      })
+    }
+
+    res.send({
+      ok: true,
+      newUser: o.ops[0]
+    });
+
+  } catch (err) {
+    console.log(err);
     res.status(err.code === 121 ? 400 : 500)
-    .json({ok: false, reason: err.message })
-  );
+      .json({
+        ok: false,
+        reason: err.message
+      });
+
+  }
 });
 
 
