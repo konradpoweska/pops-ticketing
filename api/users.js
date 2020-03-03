@@ -16,6 +16,15 @@ router.get('/', (req, res) => {
 });
 
 
+router.get('/technicians/', (req, res) => {
+  db.collection('users').find({rights:"TECHNICIAN"}
+  )
+  .toArray()
+  .then(arr => res.send(arr))
+  .catch(err => res.sendStatus(500));
+});
+
+
 
 router.get('/:id', (req, res) => {
   db.collection('users').findOne({
@@ -27,7 +36,7 @@ router.get('/:id', (req, res) => {
 
 
 
-router.post('/new', (req, res) => {
+router.post('/new', async(req, res) => {
   const newUser = req.body.user;
 
   //if(login.handleResponse(req, res, login.adminLevel))
