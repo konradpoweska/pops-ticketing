@@ -12,6 +12,9 @@
         <b-navbar-nav>
           <b-nav-item @click="$root.$emit('open-tab', {type: 'Tickets'})">Tickets</b-nav-item>
           <b-nav-item @click="$root.$emit('open-tab', {type: 'Clients'})">Clients</b-nav-item>
+          <b-nav-item @click="$root.$emit('open-tab', {type: 'Interventions'})">Interventions</b-nav-item>
+          <b-nav-item @click="$root.$emit('open-tab', {type: 'Users'})">Utilisateurs</b-nav-item>
+
         </b-navbar-nav>
 
         <!-- Right -->
