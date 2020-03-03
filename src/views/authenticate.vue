@@ -20,6 +20,7 @@ export default {
     return {
       username: '' ,
       password:'',
+      boxPwdForgotten:'',
     }
   }, 
   methods:{
@@ -49,7 +50,22 @@ export default {
             //Verifi status de rep --> 2
       },
     resetmdp: function (event){
-      console.log("J'ai oublié mon mdp!")
+      this.boxPwdForgotten = ''
+      this.$bvModal.msgBoxOk("Merci de contacter l'administrateur pour changer de mot de passe.", {
+        title: 'Mot de passe oublié',
+        size: 'sm',
+        buttonSize: 'sm',
+        okVariant: 'success',
+        headerClass: 'p-2 border-bottom-0',
+        footerClass: 'p-2 border-top-0',
+        centered: true
+      })
+      .then(value => {
+            this.boxPwdForgotten = value
+          })
+          .catch(err => {
+            // An error occurred
+          })
     }
   }
 }
