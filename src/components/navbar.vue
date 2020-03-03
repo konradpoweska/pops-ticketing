@@ -19,12 +19,8 @@
 
         <!-- Right -->
         <b-navbar-nav class="ml-auto">
-          <b-nav-item-dropdown right>
-            <template v-slot:button-content>
-              Utilisateur
-            </template>
-            <b-dropdown-item href="#">Profil</b-dropdown-item>
-            <b-dropdown-item href="#">Déconnexion</b-dropdown-item>
+          <b-nav-item-dropdown right :text="store.user.name">
+            <b-dropdown-item href="#" @click="store.user = undefined">Déconnexion</b-dropdown-item>
           </b-nav-item-dropdown>
         </b-navbar-nav>
 
@@ -32,6 +28,17 @@
 
     </b-navbar>
 </template>
+
+
+<script>
+import store from '~/store';
+
+export default {
+  data: () => ({
+    store,
+  }),
+}
+</script>
 
 
 <style scoped>
