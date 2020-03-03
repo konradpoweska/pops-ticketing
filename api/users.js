@@ -44,8 +44,8 @@ router.get('/:id', (req, res) => {
 router.post('/new', async(req, res) => {
   const newUser = req.body.user;
 
-  if(login.handleResponse(req, res, login.adminLevel))
-    return;
+  //if(login.handleResponse(req, res, login.adminLevel))
+    //return;
 
   db.collection('users').insertOne(newUser)
   .then(o => res.send({ ok: true, newUser: o.ops[0]}))
@@ -59,6 +59,10 @@ router.post('/new', async(req, res) => {
 
 router.put('/:id', async (req, res) => {
   const updatedUser = req.body.user;
+
+  //if(login.handleResponse(req, res, login.adminLevel))
+    //return;
+  
   if(!updatedUser) { res.sendStatus(400); return; }
 
   try{
