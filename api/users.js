@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
+const login = require('./loginUtils');
 
 var db;
 require('./db').connection.then(connector => db = connector.db);
@@ -28,6 +29,9 @@ router.get('/:id', (req, res) => {
 
 router.post('/new', (req, res) => {
   const newUser = req.body.user;
+
+  if(login.handleResponse(req, res, login.adminLevel))
+    return;
 
   db.collection('users').insertOne(newUser)
   .then(o => res.send({ ok: true, newUser: o.ops[0]}))
