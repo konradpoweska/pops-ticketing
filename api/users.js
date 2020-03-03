@@ -7,7 +7,7 @@ require('./db').connection.then(connector => db = connector.db);
 
 
 router.get('/', (req, res) => {
-  db.collection('clients')
+  db.collection('users')
   .find()
   .toArray()
   .then(arr => res.send(arr))
@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
 
 
 router.get('/:id', (req, res) => {
-  db.collection('clients').findOne({
+  db.collection('users').findOne({
     _id: ObjectId(req.params.id)
   })
   .then(obj => obj ? res.send(obj) : res.sendStatus(404))
@@ -27,10 +27,10 @@ router.get('/:id', (req, res) => {
 
 
 router.post('/new', (req, res) => {
-  const newClient = req.body.client;
+  const newUser = req.body.user;
 
-  db.collection('clients').insertOne(newClient)
-  .then(o => res.send({ ok: true, newClient: o.ops[0]}))
+  db.collection('users').insertOne(newUser)
+  .then(o => res.send({ ok: true, newUser: o.ops[0]}))
   .catch(err =>
     res.status(err.code === 121 ? 400 : 500)
     .json({ok: false, reason: err.message })
@@ -40,23 +40,23 @@ router.post('/new', (req, res) => {
 
 
 router.put('/:id', async (req, res) => {
-  const updatedClient = req.body.client;
-  if(!updatedClient) { res.sendStatus(400); return; }
+  const updatedUser = req.body.user;
+  if(!updatedUser) { res.sendStatus(400); return; }
 
   try{
 
-    const oldClientName = await db.collection('clients').findOne({_id: ObjectId(req.params.id)}, {_id: 0, name:1});
-    console.log("oldClient: " + oldClientName.name);
+    const oldUserName = await db.collection('users').findOne({_id: ObjectId(req.params.id)}, {_id: 0, name:1});
+    console.log("oldUser: " + oldUserName.name);
 
-    let query = await db.collection('clients').findOneAndUpdate(
+    let query = await db.collection('users').findOneAndUpdate(
       { _id: ObjectId(req.params.id) },
-      { $set: updatedClient },
+      { $set: updatedUser },
       { returnOriginal: false }
     );
     
     if(query.lastErrorObject.updatedExisting)
     {
-      res.send({ok: true, updatedClient: query.value});
+      res.send({ok: true, updatedUser: query.value});
     } else {
       res.status(404).json({ ok: false, reason: 'Not found' });
     }
@@ -66,45 +66,29 @@ router.put('/:id', async (req, res) => {
 
   await db.collection('tickets')
   .updateMany(
-    {client: oldClientName.name},
-    {$set: {client: updatedClient.name} }
+    {creator: oldUserName.name},
+    {$set: {creator: updatedUser.name} }
   );
   } catch{
     defaultWriteCatch(res);
   }
     // db.collection('tickets')
     // .aggregate([
-    //   {$match: { client: oldClientName }}])
+    //   {$match: { client: oldUserName }}])
     //   .forEach( function(doc) {
     //   do {
     //     db.collection("tickets").update({_id: doc._id},
-    //                         {$set:{"client":updatedClient.name}});
+    //                         {$set:{"client":updatedUser.name}});
     //   } while (db.getPrevError().n != 0);
     // });
   
 });
 
 
-
-router.post('/:id/requesters/new', (req, res) => {
-  // Used for adding requesters on-the-fly when creating a ticket
-  const newRequester = req.body.requester;
-
-  db.collection('clients').findOneAndUpdate(
-    { _id: ObjectId(req.params.id) },
-    { $push: { requesters: newRequester } },
-    { returnOriginal: false }
-  )
-  .then(defaultUpdateHandler(res))
-  .catch(defaultWriteCatch(res))
-});
-
-
-
 // Default handlers
 let defaultUpdateHandler = res => o =>
   o.lastErrorObject.updatedExisting ?
-    res.send({ok: true, updatedClient: o.value})
+    res.send({ok: true, updatedUser: o.value})
   : res.status(404).json({ ok: false, reason: 'Not found' });
 
 const defaultWriteCatch = res => err =>

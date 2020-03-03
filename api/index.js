@@ -12,4 +12,7 @@ router.use('/clients/', clients);
 const login = require('./login');
 router.use('/login', login);
 
+const users = require('./users');
+router.use('/users/', users);
+
 module.exports = router;
