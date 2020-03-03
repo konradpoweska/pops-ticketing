@@ -4,7 +4,7 @@
       <b-col><h2>Tickets</h2></b-col>
       <b-col class="text-right">
         <b-button v-b-toggle.collapse-1 variant="secondary">Filtrer</b-button>
-        <b-button variant="secondary" @click="fetch"><b-icon-arrow-clockwise /></b-button>
+        <b-button variant="secondary" @click="resetFilters"><b-icon-arrow-clockwise /></b-button>
         <b-button variant="primary" @click="newTicket"><b>+</b> Nouveau</b-button>
       </b-col>
     </b-row>
@@ -12,6 +12,7 @@
     <div>
       <b-collapse id="collapse-1" class="mt-2">
         <b-card class="mb-2" title="Filtres">
+          <!--rechercher aussi parmi les sous-tickets : envoyer bool ac checkbox-->
           <b-row>
             <b-col>
               <b-form-group id="input-group-1" label="Par numéro d'Id" label-for="input-1" class="mb-4">
@@ -33,6 +34,7 @@
                   <b-form-datepicker v-model="filters.endDate" id="end-date" size="sm"></b-form-datepicker>
                 </b-form>
               </b-form-group>
+              <b-form-checkbox v-model="filters.subTickets" value="true" unchecked-value="false" class="mb-3">Rechercher parmi les sous-tickets</b-form-checkbox>
             </b-col>
             <b-col>
               <b-form-group label="Par client" description="Pour sélectionner plusieurs clients, maintenir la touche Ctrl enfoncée">
@@ -45,6 +47,7 @@
             </b-col>
           </b-row>
           <b-button variant="primary" @click="fetch">Rechercher</b-button>
+          <b-button variant="secondary" @click="resetFilters"> Réinitialiser les filtres </b-button>
         </b-card>
       </b-collapse>
     </div>
@@ -67,7 +70,8 @@ export default {
       startDate: undefined,
       endDate: undefined,
       client: [],
-      requester:undefined
+      requester: undefined,
+      subTickets: "false"
     }
   }),
   created() {
@@ -75,13 +79,6 @@ export default {
     this.fetch();
   },
   methods: {
-    /*fetch() {
-      fetch('/api/tickets')
-        .then(res => res.json())
-        .then(arr => {
-          this.tickets = arr;
-        });
-    },*/
     fetch() {
       //body construction
       let query={};
@@ -94,7 +91,7 @@ export default {
       }
       if(this.filters.client.length>0) query.clients=this.filters.client;
       if(this.filters.requester!="") query.requester=this.filters.requester;
-      //this.result = query;
+      if(this.filters.subTickets=="true") query.subTickets = true;
       fetch('/api/tickets/search',{
         method: "POST",
         body: JSON.stringify(query),
@@ -109,6 +106,16 @@ export default {
     },
     newTicket() {
       this.$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: null } } });
+    },
+    resetFilters() {
+      this.filters.idTicket= undefined;
+      this.filters.status= [];
+      this.filters.startDate= undefined;
+      this.filters.endDate= undefined;
+      this.filters.client= [];
+      this.filters.requester=undefined;
+      this.filters.subTickets="false";
+      this.fetch();
     }
   },
   components: { TicketsTable },

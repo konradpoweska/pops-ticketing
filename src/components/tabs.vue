@@ -26,6 +26,9 @@ import isEqual from 'lodash/isEqual';
 import Tickets from '~/views/tickets';
 import Ticket from '~/views/ticket';
 import Clients from '~/views/clients';
+import Client from '~/views/client';
+import Interventions from '~/views/interventions';
+import Users from '~/views/users';
 
 export default {
 
@@ -62,6 +65,9 @@ export default {
     Tickets,
     Ticket,
     Clients,
+    Client,
+    Interventions,
+    Users,
   },
 
   mounted() {

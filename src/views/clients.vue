@@ -16,6 +16,7 @@
       responsive="sm"
       sort-icon-left
       hover
+      @row-dblclicked="dblclicked"
       :filter="filter"
       :sort-by.sync="sortBy"
       :items="clients"
@@ -70,7 +71,13 @@
       clients() {
         return store.clients;
       }
+    },
+    methods:{
+      dblclicked(item, index, event) {
+        this.$root.$emit('open-tab', {type: 'Client', data: {id: item._id}});
+      },
     }
+
   }
 
 </script>
