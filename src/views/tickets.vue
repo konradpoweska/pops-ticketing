@@ -46,7 +46,7 @@
               </b-form-group>
             </b-col>
           </b-row>
-          <b-button variant="primary" @click="fetch">Rechercher</b-button>
+          <b-button v-b-toggle.collapse-1 variant="primary" @click="fetch">Rechercher</b-button>
           <b-button variant="secondary" @click="resetFilters"> Réinitialiser les filtres </b-button>
         </b-card>
       </b-collapse>

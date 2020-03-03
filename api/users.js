@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
+const login = require('./loginUtils');
 
 var db;
 require('./db').connection.then(connector => db = connector.db);
@@ -9,6 +10,20 @@ require('./db').connection.then(connector => db = connector.db);
 router.get('/', (req, res) => {
   db.collection('users')
   .find()
+  .toArray()
+  .then(arr => res.send(arr))
+  .catch(err => res.sendStatus(500));
+});
+
+
+router.get('/technicians/', (req, res) => {
+  db.collection('users').find({
+    rights: "TECHNICIAN"
+  }, {
+    projection: {
+      password: false
+    }
+  })
   .toArray()
   .then(arr => res.send(arr))
   .catch(err => res.sendStatus(500));
@@ -26,21 +41,50 @@ router.get('/:id', (req, res) => {
 
 
 
-router.post('/new', (req, res) => {
+router.post('/new', async (req, res) => {
   const newUser = req.body.user;
 
-  db.collection('users').insertOne(newUser)
-  .then(o => res.send({ ok: true, newUser: o.ops[0]}))
-  .catch(err =>
+  //if(login.handleResponse(req, res, login.adminLevel))
+  //return;
+  try {
+    let o = await db.collection('users').insertOne(newUser);
+
+    if (newUser.technicians) {
+      await db.collection('users').updateMany({
+        _id: {
+          $in: newUser.technicians.map(id => ObjectId(id))
+        }
+      }, {
+        $set: {
+          manager: newUser._id
+        }
+      })
+    }
+
+    res.send({
+      ok: true,
+      newUser: o.ops[0]
+    });
+
+  } catch (err) {
+    console.log(err);
     res.status(err.code === 121 ? 400 : 500)
-    .json({ok: false, reason: err.message })
-  );
+      .json({
+        ok: false,
+        reason: err.message
+      });
+
+  }
 });
 
 
 
 router.put('/:id', async (req, res) => {
   const updatedUser = req.body.user;
+
+  //if(login.handleResponse(req, res, login.adminLevel))
+    //return;
+  
   if(!updatedUser) { res.sendStatus(400); return; }
 
   try{

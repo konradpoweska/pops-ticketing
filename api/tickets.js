@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const e = require('./httpErrors');
+const isEqual = require('lodash/isEqual');
 
 var db;
 require('./db').connection.then(connector => db = connector.db);
@@ -41,19 +42,20 @@ router.get('/:id', (req, res) => {
       localField: 'parentTicket',
       foreignField: '_id',
       as: 'joins.parentTicket'
+    } },
+    { $unwind: {
+      path: "$joins.parentTicket",
+      preserveNullAndEmptyArrays: true
     } }
   ])
   .next()
-  .then(doc => {
-    if(doc === null) return null;
-    const joins = doc.joins;
-    delete doc.joins;
-    joins.parentTicket = joins.parentTicket[0];
-    return { doc, joins };
-  })
   .then(obj => obj ? res.send(obj) : res.sendStatus(404))
-  .catch(err => res.sendStatus(500));
+  .catch(err => {
+    res.sendStatus(500);
+    console.error(err);
+  });
 });
+
 
 
 async function updateParent(idToUpdate) {
@@ -117,6 +119,7 @@ async function updateParent(idToUpdate) {
 }
 
 
+
 router.post('/new', async (req, res) => { // async for await and get the id
   try {
     const input = req.body.ticket;
@@ -158,7 +161,8 @@ router.post('/new', async (req, res) => { // async for await and get the id
 
     await db.collection('tickets').bulkWrite(bulkOps);
 
-    const updatedTickets = hasParentTicket ? await updateParent(input.parentTicket) : [];
+    const updatedTickets = await updateParent(input.parentTicket);
+    if(hasSubTickets) updatedTickets[0].subTickets = [ { _id: newId, weight: 1 } ];
 
     res.send({ ok: true, newTicket: input, updatedTickets });
 
@@ -166,11 +170,111 @@ router.post('/new', async (req, res) => { // async for await and get the id
   catch(err) {
     if(err.code == 121) res.status(400); // Mongo Validation Error
     else if(err instanceof e.HttpError) res.status(err.httpCode);
-    else { res.status(500); console.log(err); }
+    else { res.status(500); console.error(err); }
 
     res.json({ ok: false, reason: err.message });
   }
 });
+
+
+
+const leafTicketSpecificFields = ['skills', 'estimatedDuration', 'plannedIntervention', 'technician','actualDuration', 'counterStart'];
+const leafTicketOnlyInputFields = [...leafTicketSpecificFields, 'progress'];
+
+
+router.put('/:id', async (req, res) => {
+  try {
+    const input = req.body.ticket;
+    if(!input) throw new e.BadRequestError("No object provided");
+
+    const _id = parseInt(req.params.id);
+    if(input.hasOwnProperty('_id') && input._id !== _id)
+      throw new e.BadRequestError("Id in URL doesn't match the one in the body.");
+
+    const $set = {};
+    const $unset = {};
+
+    for(let prop of ['title', 'type', 'client', 'requester', 'category', 'description'])
+      if(input.hasOwnProperty(prop))
+        $set[prop] = input[prop];
+
+    const ticketBeforeUpdate = await db.collection('tickets').findOne({ _id });
+    if(ticketBeforeUpdate == null) throw new e.NotFoundError("Ticket doesn't exist.");
+
+    if(input.subTickets != null) {
+      if(Object.keys(input).some(k => leafTicketOnlyInputFields.includes(k)))
+        throw new e.BadRequestError("Your request contains contradictory fields.");
+
+      if(ticketBeforeUpdate.subTickets) {
+        if(!isEqual(ticketBeforeUpdate.subTickets.map(t => t._id).sort(), input.subTickets.map(t => t._id).sort()))
+          throw new e.BadRequestError("Only reordering and weight changes are allowed on sub-tickets.");
+      }
+      else leafTicketSpecificFields.forEach(p => $unset[p] = "");
+
+      $set.subTickets = input.subTickets;
+    }
+
+    else if(leafTicketOnlyInputFields.some(prop => input.hasOwnProperty(prop))) {
+      if(ticketBeforeUpdate.subTickets) {
+        if(ticketBeforeUpdate.subTickets.length)
+          throw new e.BadRequestError("Ticket has sub-tickets, cannot convert to assigned type.");
+        else
+          $unset.subTickets = "";
+      }
+
+      for(let prop of leafTicketOnlyInputFields)
+        if(input.hasOwnProperty(prop)) {
+          if(prop in ['estimatedDuration', 'plannedIntervention', 'actualDuration', 'counterStart'])
+            $set[prop] = new Date(input[prop]);
+          else
+            $set[prop] = input[prop];
+        }
+
+    }
+
+    const updateOps = {};
+    if(Object.keys($set).length > 0) updateOps.$set = $set;
+    if(Object.keys($unset).length > 0) updateOps.$unset = $unset;
+
+    if(Object.keys(updateOps).lenght == 0)
+      throw new e.BadRequestError("Nothing to update.");
+
+    updateOps.$currentDate = { lastEdit: true };
+
+    const updateQuery = await db.collection('tickets').findOneAndUpdate(
+      { _id },
+      updateOps,
+      { returnOriginal: false }
+    );
+
+    if(!updateQuery.lastErrorObject.updatedExisting)
+      throw new Error("Couldn't update");
+
+    const updatedTicket = updateQuery.value;
+
+    let updatedTickets;
+
+    if(input.subTickets != null) {
+      // current ticket progress needs to be updated because the weight of sub-tickets could have changed
+      updatedTickets = await updateParent(_id);
+      const t = updatedTickets.shift(); // returns changes on current ticket
+      if(t) updatedTicket.progress = t.progress;
+    }
+    else updatedTickets = await updateParent(updatedTicket.parentTicket);
+
+    res.send({ ok: true, updatedTicket, updatedTickets });
+  }
+  catch(err) {
+    if(err.code == 121) res.status(400); // Mongo Validation Error
+    else if(err instanceof e.HttpError) res.status(err.httpCode);
+    else { res.status(500); console.error(err); }
+
+    res.json({ ok: false, reason: err.message });
+  }
+});
+
+
+
 /*
 _id=this.filters.idTicket;
 status=this.filters.status;
@@ -181,6 +285,7 @@ created=this.filters.startDate OU {
 clients=this.filters.client OU client=this.filters.client[0],
 requester=this.filters.requester
 */
+
 router.post("/search", async (req, res) => {
   let query = {};
   //console.log(req.body);
