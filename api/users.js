@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
 const login = require('./loginUtils');
+const crypt = require('bcrypt');
+
+const saltRounds = 8;
 
 var db;
 require('./db').connection.then(connector => db = connector.db);
@@ -46,7 +49,11 @@ router.post('/new', async (req, res) => {
 
   //if(login.handleResponse(req, res, login.adminLevel))
   //return;
+  
   try {
+
+    newUser.password = await crypt.hash(newUser.password, saltRounds);
+
     let o = await db.collection('users').insertOne(newUser);
 
     if (newUser.technicians) {
@@ -91,6 +98,8 @@ router.put('/:id', async (req, res) => {
 
     const oldUserName = await db.collection('users').findOne({_id: ObjectId(req.params.id)}, {_id: 0, name:1});
     console.log("oldUser: " + oldUserName.name);
+
+    updatedUser.password = crypt.hashSync(updatedUser.password, saltRounds);
 
     let query = await db.collection('users').findOneAndUpdate(
       { _id: ObjectId(req.params.id) },

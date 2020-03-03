@@ -1,11 +1,15 @@
 const express = require('express');
 const router = express.Router();
+const crypt = require('bcrypt');
 
 var db;
 require('./db').connection.then(connector => db = connector.db);
 
 var jwt = require('jsonwebtoken');
+
 const secret = process.env.SECRET || 'devtest';
+const saltRounds = 8;
+
 
 router.post('/', (req, res) => {
 
@@ -22,7 +26,7 @@ router.post('/', (req, res) => {
     ).then(doc =>{
 
         //When we find him, check if the password in the request, and the password in the DB match
-        if(doc && doc.password == password){
+        if(doc && crypt.compareSync(password, doc.password)){
             console.log("Authorized "+username+" with level "+doc.rights);
 
             //If they do, send the token

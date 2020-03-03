@@ -46,6 +46,12 @@ const fields = [
     sortable: true,
     formatter: v => new Date(v).toLocaleString('fr')
   },
+  {
+    key: "created",
+    label: "Création",
+    sortable: true,
+    formatter: v => new Date(v).toLocaleString('fr')
+  }
 ];
 Object.freeze(fields);
 
