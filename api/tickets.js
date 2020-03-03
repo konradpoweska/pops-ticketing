@@ -162,7 +162,7 @@ router.post('/new', async (req, res) => { // async for await and get the id
     await db.collection('tickets').bulkWrite(bulkOps);
 
     const updatedTickets = await updateParent(input.parentTicket);
-    if(hasSubTickets) updatedTickets[0].subTickets = [ { _id: newId, weight: 1 } ];
+    if(hasParentTicket) updatedTickets[0].subTickets = [ { _id: newId, weight: 1 } ];
 
     res.send({ ok: true, newTicket: input, updatedTickets });
 
