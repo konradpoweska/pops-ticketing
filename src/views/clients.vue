@@ -16,13 +16,16 @@
       responsive="sm"
       sort-icon-left
       hover
-      @row-dblclicked="dblclicked"
       :filter="filter"
       :sort-by.sync="sortBy"
       :items="clients"
       :fields="fields"
     >
-
+    <template v-slot:cell(actions)="data">
+      <b-button class="py-0" @click="$root.$emit('open-tab', { type: 'Client', data: { id: data.item._id }})">
+        <b-icon-pencil />
+      </b-button>
+    </template>
       <template v-slot:cell(priority)="data">
         <span v-if="data.item.priority" class="ml-2">★</span>
       </template>
@@ -40,8 +43,9 @@
       return {
         sortBy: 'name',
         fields: [
+          {key: 'actions', label:'Actions'},
           {key: 'name', label: 'Nom', sortable: true},
-          {key: 'priority', label: 'Prioritaire', sortable: true},
+          {key: 'priority', label: 'VIP', sortable: true},
           {key: 'email', label: 'Adresse email'},
           {
             key: 'phone',
@@ -71,11 +75,6 @@
       clients() {
         return store.clients;
       }
-    },
-    methods:{
-      dblclicked(item, index, event) {
-        this.$root.$emit('open-tab', {type: 'Client', data: {id: item._id}});
-      },
     }
 
   }
