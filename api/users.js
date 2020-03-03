@@ -17,8 +17,13 @@ router.get('/', (req, res) => {
 
 
 router.get('/technicians/', (req, res) => {
-  db.collection('users').find({rights:"TECHNICIAN"}
-  )
+  db.collection('users').find({
+    rights: "TECHNICIAN"
+  }, {
+    projection: {
+      password: false
+    }
+  })
   .toArray()
   .then(arr => res.send(arr))
   .catch(err => res.sendStatus(500));
