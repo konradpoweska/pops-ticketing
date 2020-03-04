@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ObjectId = require('mongodb').ObjectId;
 const login = require('./loginUtils');
-const crypt = require('bcrypt');
+const crypt = require('bcryptjs');
 
 const saltRounds = 8;
 
@@ -49,7 +49,7 @@ router.post('/new', async (req, res) => {
 
   //if(login.handleResponse(req, res, login.adminLevel))
   //return;
-  
+
   try {
 
     newUser.password = await crypt.hash(newUser.password, saltRounds);
@@ -91,7 +91,7 @@ router.put('/:id', async (req, res) => {
 
   //if(login.handleResponse(req, res, login.adminLevel))
     //return;
-  
+
   if(!updatedUser) { res.sendStatus(400); return; }
 
   try{
@@ -106,7 +106,7 @@ router.put('/:id', async (req, res) => {
       { $set: updatedUser },
       { returnOriginal: false }
     );
-    
+
     if(query.lastErrorObject.updatedExisting)
     {
       res.send({ok: true, updatedUser: query.value});
@@ -115,7 +115,7 @@ router.put('/:id', async (req, res) => {
     }
     // .then(defaultUpdateHandler(res));
     // .catch(defaultWriteCatch(res));
-  
+
 
   await db.collection('tickets')
   .updateMany(
@@ -134,7 +134,7 @@ router.put('/:id', async (req, res) => {
     //                         {$set:{"client":updatedUser.name}});
     //   } while (db.getPrevError().n != 0);
     // });
-  
+
 });
 
 
