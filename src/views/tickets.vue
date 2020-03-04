@@ -4,7 +4,7 @@
       <b-col><h2>Tickets</h2></b-col>
       <b-col class="text-right">
         <b-button v-b-toggle.collapse-1 variant="secondary">Filtrer</b-button>
-        <b-button variant="secondary" @click="resetFilters"><b-icon-arrow-clockwise /></b-button>
+        <b-button variant="secondary" @click="fetch"><b-icon-arrow-clockwise /></b-button>
         <b-button variant="primary" @click="newTicket"><b>+</b> Nouveau</b-button>
       </b-col>
     </b-row>

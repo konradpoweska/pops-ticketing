@@ -98,7 +98,7 @@
         </b-form-group>
 
         <b-form-group label="Catégorie">
-          <b-form-input v-model.trim="ticket.category"></b-form-input>
+          <b-form-input v-model.trim="ticket.category" required></b-form-input>
         </b-form-group>
 
         <b-form-group label="Description">
@@ -112,7 +112,7 @@
         </b-form-group> -->
 
         <b-form-group label="Mode">
-          <b-form-radio-group v-model="ticketWithSubTickets">
+          <b-form-radio-group v-model="ticketWithSubTickets" required>
             <b-form-radio :value="true">Sous-tickets</b-form-radio>
             <b-form-radio :value="false" :disabled="hasSubTickets">Technicien affecté</b-form-radio>
           </b-form-radio-group>
@@ -283,16 +283,69 @@ export default {
         fetch('/api/tickets/'+this.baseTicket._id)
         .then(res => res.json())
         .then(res => {
-          this.parentTicket = res.joins.parentTicket;
-          this.subTickets = res.joins.parentTicket;
+          this.joins = res.joins.parentTicket;
           delete res.joins;
           this.ticketWithSubTickets = res.subTickets != null;
+          // if(this.ticketWithSubTickets) { /* init subTickets */ }
           this.ticket = res;
         });
-
     },
     updateTabTitle() { this.$emit('title-update', this.formattedTitle); },
     save() {
+      if(this.isNew) return this.saveNew();
+
+      fetch('/api/tickets/' + this.ticket._id, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket: this.ticket })
+      })
+      .then(res => { if(!res.ok) throw new Error(res.statusText); return res.json(); })
+      .then(res => {
+        this.ticket = res.updatedTicket;
+        // this.$root.$emit('update-ticket', );
+      })
+      .catch(err => console.error(err));
+    },
+    saveNew() {
+      // add missing fields
+      if(!this.ticket.hasOwnProperty('description')) this.ticket.description = "";
+      if(this.ticketWithSubTickets)
+        this.ticket.subTickets = [];
+      else {
+        for(let prop of ['estimatedDuration', 'plannedIntervention', 'technician', 'actualDuration', 'counterStart'])
+          if(!this.ticket.hasOwnProperty(prop)) this.ticket[prop] = null;
+        if(!this.ticket.hasOwnProperty('skills')) this.ticket.skills = [];
+        if(!this.ticket.hasOwnProperty('progress')) this.ticket.progress = 0.0;
+      }
+
+      const tasks = Promise.resolve();
+
+      // on-the-fly requester adding
+      if(this.ticket.requester == this.newRequester)
+        tasks.then(() => fetch('/api/clients/'+this.currentClient._id+'/requesters/new', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ requester: this.newRequester })
+        }))
+        .then(res => { if(!res.ok) throw new Error(res.statusText); return res.json(); })
+        .then(res => {
+          for(let i=0; i<store.clients.length; ++i)
+            if(store.clients[i]._id == res.updatedClient._id) { store.clients[i] = res.updatedClient; break; }
+          this.ticket.requester = this.newRequester.name;
+        });
+
+      tasks.then(() => fetch('/api/tickets/new', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ticket: this.ticket })
+      }))
+      .then(res => { if(!res.ok) throw new Error(res.statusText); return res.json(); })
+      .then(res => {
+        this.ticket = res.newTicket;
+        this.baseTicket._id = res.newTicket._id;
+      });
+
+      tasks.catch(err => console.error(err));
     },
     updateStatus() {
       if(this.technician!="" && this.technician!=undefined){
