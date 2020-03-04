@@ -28,6 +28,21 @@
       </div>
     </template>
 
+    <template v-slot:cell(status)="data">
+      <div v-if="data.value=='OPEN'">
+        <b-badge variant="warning">OUVERT</b-badge>
+      </div>
+      <div v-if="data.value=='IN_PROGRESS'">
+        <b-badge variant="primary">EN COURS</b-badge>
+      </div>
+      <div v-if="data.value=='COMPLETED'">
+        <b-badge variant="success">TERMINÉ</b-badge>
+      </div>
+      <div v-if="data.value=='CLOSED_SUCCESS' || data.value=='CLOSED_ABORTED' || data.value=='DELETED'">
+        <b-badge variant="secondary">FERMÉ</b-badge>
+      </div>
+    </template>
+
   </b-table>
 </template>
 
@@ -35,6 +50,7 @@
 <script>
 const fields = [
   { key: "actions" },
+  { key: "status", label: "Statut"},
   { key: "_id", label: "Id", sortable: true },
   { key: "title", label: "Nom" },
   { key: 'progress', label: 'Progrès' },
