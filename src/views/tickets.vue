@@ -21,9 +21,9 @@
 
               <b-form-group label="Par statut des tickets" label-for="checkbox-group-2" class="mb-4">
                 <b-form-checkbox-group id="checkbox-group-2" v-model="filters.status" name="status">
-                  <b-form-checkbox value="1">Ouverts</b-form-checkbox>
-                  <b-form-checkbox value="2">En cours</b-form-checkbox>
-                  <b-form-checkbox value="3">Fermés</b-form-checkbox>
+                  <b-form-checkbox :value="1">Ouverts</b-form-checkbox>
+                  <b-form-checkbox :value="2">En cours</b-form-checkbox>
+                  <b-form-checkbox :value="3">Fermés</b-form-checkbox>
                 </b-form-checkbox-group>
               </b-form-group>
               <b-form-group label="Par date de création" class="mb-4">
@@ -66,7 +66,7 @@ export default {
     tickets: null,
     filters: {
       idTicket: undefined,
-      status: ["1"],
+      status: [1,2],
       startDate: undefined,
       endDate: undefined,
       client: [],

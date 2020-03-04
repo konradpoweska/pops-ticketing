@@ -317,15 +317,14 @@ router.post("/search", async (req, res) => {
     query._id = parseInt(req.body._id);
   }
   if(req.body.hasOwnProperty("status")){
-    let int_status = parseInt(req.body.status);
+    let selectedStatuses = [];
     // 'OPEN', 'IN_PROGRESS', 'COMPLETED', 'CLOSED_SUCCESS', 'CLOSED_ABORTED', 'DELETED'
-    if(int_status == 1){
-      query.status = 'OPEN';
-    } else if(int_status == 2){
-      query.status = {$in: ['IN_PROGRESS', 'COMPLETED']};
-    } else {
-      query.status = {$in: ['CLOSED_SUCCESS', 'CLOSED_ABORTED', 'DELETED']};
-    }
+    for(let v of req.body.status)
+      if(v == 1) selectedStatuses.push('OPEN');
+      else if(v == 2) selectedStatuses.push('IN_PROGRESS', 'COMPLETED');
+      else if(v == 3) selectedStatuses.push('CLOSED_SUCCESS', 'CLOSED_ABORTED');
+
+    query.status = {$in: selectedStatuses};
   }
   if(req.body.hasOwnProperty("created")){
     query.created = req.body.created;

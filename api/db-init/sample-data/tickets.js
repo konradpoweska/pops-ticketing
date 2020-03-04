@@ -6,7 +6,7 @@ module.exports = [
     created: new Date(1581536729000),
     lastEdit: new Date(1581619634000),
     creator: "Mira Van Emhyr",
-    status: "IN_PROGRESS",
+    status: "OPEN",
     progress: 0.5,
 
     title: "Rétablir l'accès",
@@ -26,7 +26,7 @@ module.exports = [
     created: new Date(1581536735000),
     lastEdit: new Date(1581619642000),
     creator: "Olgierd Von Everec",
-    status: "IN_PROGRESS",
+    status: "OPEN",
 
     title: "Réparer un tuyau.",
     type: "I",
