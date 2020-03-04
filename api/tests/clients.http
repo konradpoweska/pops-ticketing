@@ -1,0 +1,42 @@
+GET http://localhost:3000/api/clients/
+
+###
+
+PUT http://localhost:3000/api/clients/5e58f1baa3b87e12fc0183cc
+Content-Type: application/json
+
+{
+  "client": {"name": "Hello3"}
+}
+
+###
+
+
+POST http://localhost:3000/api/clients/new
+Content-Type: application/json
+
+
+
+{
+  "client":  {
+    "name": "Zboubibouba",
+    "priority": false,
+    "email": "kdjsaks@loul.fr",
+    "locations": [
+      {
+        "name": "123 Avenue Emdéhaire",
+        "address": "5 rue du Duciel",
+        "phone": "+33 1 23 45 76 54"
+      }
+    ],
+    "mainLocation": 0,
+    "requesters": [
+      {
+        "name": "Jacques Spareaux",
+        "address": "5 rue du Duciel",
+        "phone": "+33 1 23 45 76 54",
+        "email": "jacques.spareaux@vendreve.fr"
+      }
+    ]
+  }
+}

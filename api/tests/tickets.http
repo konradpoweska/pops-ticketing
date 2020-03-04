@@ -1,0 +1,70 @@
+### List of tickets
+GET http://localhost:3000/api/tickets
+
+
+### Detailed view of ticket, with joins
+GET http://localhost:3000/api/tickets/1
+
+
+### New ticket with subtickets
+POST http://localhost:3000/api/tickets/new
+Content-Type: application/json
+
+{
+  "ticket": {
+    "title": "Ordinateur cassé",
+    "type": "I",
+    "client": "NoiceCord",
+    "requester": "Charles Hackerman",
+    "category": "PEBCAK",
+    "description": "Ça ne marche pas.",
+    "subTickets": []
+  }
+}
+
+
+### New ticket (leaf type)
+POST http://localhost:3000/api/tickets/new
+Content-Type: application/json
+
+{
+  "ticket": {
+    "title": "Vérifier branchements",
+    "parentTicket": 1,
+    "type": "I",
+    "client": "NoiceCord",
+    "requester": "Charles Hackerman",
+    "category": "PEBCAK",
+    "description": "Vérifier si l'ordinateur est branché au secteur.",
+    "progress": 0.9,
+    "skills": [],
+    "estimatedDuration": "2020-02-29T10:15:16.345Z",
+    "plannedIntervention": "2020-02-29T10:15:16.345Z",
+    "technician": null,
+    "actualDuration": null,
+    "counterStart": null
+  }
+}
+
+
+
+###
+
+PUT http://localhost:3000/api/tickets/1
+Content-Type: application/json
+
+{
+  "ticket": {
+    "_id": 1,
+    "subTickets": [
+      {
+        "_id": 2,
+        "weight": 1
+      },
+      {
+        "_id": 4,
+        "weight": 1
+      }
+    ]
+  }
+}

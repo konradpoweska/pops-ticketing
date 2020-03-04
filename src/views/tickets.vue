@@ -75,7 +75,7 @@ export default {
     }
   }),
   created() {
-    this.$root.$on('refresh-tickets', this.fetch);
+    this.$root.$on('update-ticket', this.fetch);
     this.fetch();
   },
   methods: {

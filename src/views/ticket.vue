@@ -13,8 +13,8 @@
 
         <div v-if="ticket.parentTicket">
           Ticket parent&nbsp;:
-          <a href="#" @click="$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: ticket.parentTicket._id } } })">
-            #{{ ticket.parentTicket._id }} - {{ ticket.parentTicket.title }}
+          <a href="#" @click="$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: ticket.parentTicket } } })">
+            #{{ parentTicket._id }} - {{ parentTicket.title }}
           </a>
         </div>
         <div v-if="ticket.status=='OPEN'">
@@ -23,7 +23,7 @@
         <div v-if="ticket.status=='IN_PROGRESS'">
           Statut du ticket : <b-badge variant="primary">EN COURS</b-badge>
         </div>
-        <div v-if="ticket.status=='COMPLETED' || ticket.progress==1">
+        <div v-if="ticket.status=='COMPLETED'">
           Statut du ticket : <b-badge variant="success">TERMINÉ</b-badge>
         </div>
         <div v-if="ticket.status=='CLOSED_SUCCESS' || ticket.status=='CLOSED_ABORTED' || ticket.status=='DELETED'">
@@ -69,16 +69,16 @@
 
           <b-card v-else-if="ticket.requester == newRequester" class="mt-1">
             <b-form-group label="Nom">
-              <b-form-input v-model.trim="newRequester.name" required></b-form-input>
+              <b-form-input v-model="newRequester.name" trim required></b-form-input>
             </b-form-group>
             <b-form-group label="Email">
-              <b-form-input v-model.trim="newRequester.email" type="email" required></b-form-input>
+              <b-form-input v-model="newRequester.email" trim type="email" required></b-form-input>
             </b-form-group>
             <b-form-group label="Tél.">
-              <b-form-input v-model.trim="newRequester.phone" type="tel" required></b-form-input>
+              <b-form-input v-model="newRequester.phone" trim type="tel" required></b-form-input>
             </b-form-group>
             <b-form-group label="Adresse">
-              <b-form-input v-model.trim="newRequester.address" required></b-form-input>
+              <b-form-input v-model="newRequester.address" trim required></b-form-input>
             </b-form-group>
           </b-card>
 
@@ -87,7 +87,7 @@
 
       <b-col md="6">
         <b-form-group label="Nom du ticket">
-          <b-form-input v-model.trim="ticket.title" required></b-form-input>
+          <b-form-input v-model="ticket.title" trim required></b-form-input>
         </b-form-group>
 
         <b-form-group label="Type" required>
@@ -98,11 +98,11 @@
         </b-form-group>
 
         <b-form-group label="Catégorie">
-          <b-form-input v-model.trim="ticket.category" required></b-form-input>
+          <b-form-input v-model="ticket.category" lazy trim required></b-form-input>
         </b-form-group>
 
         <b-form-group label="Description">
-          <b-form-textarea v-model.lazy="ticket.description">
+          <b-form-textarea v-model="ticket.description" lazy trim>
         </b-form-group>
 
         <!-- <b-form-group v-if="ticket.type == 'I'" label="Adresse de l'intervention">
@@ -144,7 +144,7 @@
       <b-table
         v-if="!isNew"
         :fields="subTicketsTableFields"
-        :items="ticket.subTickets"
+        :items="subTickets"
         responsive="sm"
         primary-key="_id"
         hover
@@ -159,50 +159,61 @@
 
         <template v-slot:cell(progress)="data"><b-progress :value="data.value" max=1 show-progress></b-progress></template>
 
+        <template v-slot:cell(weight)="data"><b-form-input v-model.number="data.item.item.weight" style="width: 60px;" min="0" /></template>
       </b-table>
-      <!-- <TicketsTable v-if="!isNew" :items="ticket.subTickets"></TicketsTable> -->
       <div v-else class="text-center text-secondary">Pour ajouter des sous-tickets, enregistrez d'abord ce ticket.</div>
     </div>
 
 
 
-    <div v-else-if="ticketWithSubTickets === false">
+    <b-row v-else-if="ticketWithSubTickets === false">
 
-      <!-- Infos sur compétences requises, technicien -->
-      <!-- durée prévue, compteur, progrès. -->
+      <b-col md="4">
+        <b-row>
+          <b-col>Compétences</b-col>
+          <b-col class="text-right"><b-button @click="addSkill" size="sm">Ajouter</b-col>
+        </b-row>
+        <b-table-simple><b-tbody>
+          <b-tr v-for="s in ticket.skills">
+            <b-td><b-input placeholder="Compétence" v-model="s.name" required></b-td>
+            <b-td><b-input placeholder="Niveau" v-model.number="s.level" required></b-td>
+            <b-td><b-button @click="ticket.skills.splice(ticket.skills.indexOf(s), 1)" size="sm">-</b-button></b-td>
+          </b-tr>
+        </b-tbody></b-table-simple>
+      </b-col>
 
-      <b-row>
-        <b-col>
-          <b-form-group label="Compétences">
-            <b-form-select></b-form-select>
-          </b-form-group>
-        </b-col>
-        <b-col>
-          <b-form-group label="Technicien">
-            <b-form-select v-model="technician" :options="techs.map(e => e.name)"></b-form-select>
-          </b-form-group>
-        </b-col>
-      </b-row>
+      <b-col md="4">
+        <b-form-group label="Technicien">
+          <b-form-select v-model="ticket.technician" :options="technicians.map(e => e.name)">
+            <option :value="null" style="color: #aaa;">--Pas affecté--</option>
+          </b-form-select>
+        </b-form-group>
+        <b-form-group label="Date de l'intervention">
+          <b-form-input />
+        </b-form-group>
+        <b-form-group label="Durée prévue">
+          <b-form-input></b-form-input>
+        </b-form-group>
+      </b-col>
 
-      <b-row>
-        <b-col>
-          <b-form-group label="Durée prévue">
-            <b-form-input></b-form-input>
-          </b-form-group>
-        </b-col>
-        <b-col>
-          <b-form-group label="Durée réelle">
-            <b-form-input></b-form-input>
-          </b-form-group>
-        </b-col>
-        <b-col>
-          <b-form-group label="Commencer">
-            <b-button>Commencer</b-button>
-          </b-form-group>
-        </b-col>
-      </b-row>
+      <b-col md="4">
+        <b-form-group label="Durée réelle">
+          <b-form-input></b-form-input>
+        </b-form-group>
+        <b-form-group label="Compteur">
+          <b-button v-if="ticket.counterStart == null">Commencer</b-button>
+          <b-button v-else>Arrêter</b-button>
+        </b-form-group>
+        <b-form-group label="Progrès">
+          <b-form-input
+            :value="Math.floor(ticket.progress*100)"
+            @update="ticket.progress = $event/100.0"
+            type="number" min="0" max="100">
+          </b-form-input>
+        </b-form-group>
+      </b-col>
 
-    </div>
+    </b-row>
 
   </EditForm>
   <div v-else class="text-center">
@@ -223,10 +234,10 @@ const subTicketsTableFields = [
   { key: 'progress', label: 'Progrès' },
   {
     key: "lastEdit",
-    label: 'Dernière modification',
-    sortable: true,
+    label: 'Modification',
     formatter: v => new Date(v).toLocaleString('fr')
   },
+  { key: 'weight', label: 'Poids' }
 ];
 
 export default {
@@ -238,11 +249,38 @@ export default {
       ticketWithSubTickets: undefined,
       newRequester: {},
       subTicketsTableFields,
-      techs: undefined,
-      technician: undefined
+      subTickets: undefined,
+      technicians: []
     }
   },
-  created() { this.initTicket(); this.technicians();},
+  mounted() {
+    this.initTicket();
+    this.$root.$on('update-ticket', updated => {
+      if(updated.$sourceTicket._id == this.baseTicket._id)
+      debugger;
+      if(this.parentTicket && this.parentTicket._id == updated.$sourceTicket._id) { this.parentTicket = updated.$sourceTicket; return; }
+
+      let subTicketsIds = this.ticket.subTickets ? this.ticket.subTickets.map(e => e._id) : null;
+
+      for(let t of updated)
+        if(t._id == this.baseTicket._id) for(let prop in t) { console.log(`Setting ${prop} as ${t[prop]} for ticket #${this.baseTicket._id}`); this.ticket[prop] = t[prop]; }
+        else if(this.hasSubTickets) {
+          let subIndex = subTicketsIds.indexOf(t._id);
+          if(subIndex !== -1) for(let prop in t) this.subTickets[subIndex][prop] = t[prop];
+        }
+
+      if(this.hasSubTickets)
+        for(let i=0; i<subTicketsIds.length; i++)
+          if(subTicketsIds[i] == updated.$sourceTicket._id)
+            this.$set(this.subTickets, i, {...updated.$sourceTicket, item: this.ticket.subTickets[i]});
+    });
+    fetch('/api/users/technicians')
+      .then(res => res.json())
+      .then(arr => {
+        this.technicians = arr;
+      });
+    this.initTicket();
+  },
   computed: {
     isNew() {
       return this.baseTicket._id == null;
@@ -266,13 +304,6 @@ export default {
     },
     currentRequester() {
       if(this.currentClient) for(let r of this.currentClient.requesters) if(r.name == this.ticket.requester) return r;
-    },
-    technicians(){
-      fetch('/api/users/technicians')
-      .then(res => res.json())
-      .then(arr => {
-        this.techs = arr;
-      });
     }
   },
   methods: {
@@ -283,26 +314,51 @@ export default {
         fetch('/api/tickets/'+this.baseTicket._id)
         .then(res => res.json())
         .then(res => {
-          this.joins = res.joins.parentTicket;
-          delete res.joins;
+          this.parentTicket = res.joins.parentTicket;
           this.ticketWithSubTickets = res.subTickets != null;
-          // if(this.ticketWithSubTickets) { /* init subTickets */ }
           this.ticket = res;
+
+          if(this.ticketWithSubTickets)
+            this.subTickets = res.subTickets.map(sr => {
+              for(let sf of res.joins.subTickets) if(sr._id == sf._id) {
+                sf.item = sr;
+                return sf;
+              }
+            })
+
+          delete res.joins;
+
         });
     },
     updateTabTitle() { this.$emit('title-update', this.formattedTitle); },
+    addSkill() {
+      let obj = { name: '', level: null }
+      if(this.ticket.skills) this.ticket.skills.push(obj);
+      else this.ticket.skills = [ obj ];
+    },
     save() {
       if(this.isNew) return this.saveNew();
+
+      const ticketFields = {};
+      for(let prop of ['client', 'requester', 'title', 'type', 'category', 'description', 'status'])
+        ticketFields[prop] = this.ticket[prop];
+
+      if(this.ticketWithSubTickets)
+        ticketFields.subTickets = this.ticket.subTickets;
+      else
+        for(let prop of ['progress', 'skills', 'estimatedDuration', 'plannedIntervention', 'technician', 'actualDuration', 'counterStart'])
+          ticketFields[prop] = this.ticket[prop];
 
       fetch('/api/tickets/' + this.ticket._id, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ticket: this.ticket })
+        body: JSON.stringify({ ticket: ticketFields })
       })
       .then(res => { if(!res.ok) throw new Error(res.statusText); return res.json(); })
       .then(res => {
         this.ticket = res.updatedTicket;
-        // this.$root.$emit('update-ticket', );
+        res.updatedTickets.$sourceTicket = res.updatedTicket;
+        this.$root.$emit('update-ticket', res.updatedTickets);
       })
       .catch(err => console.error(err));
     },
@@ -342,15 +398,15 @@ export default {
       .then(res => { if(!res.ok) throw new Error(res.statusText); return res.json(); })
       .then(res => {
         this.ticket = res.newTicket;
+        res.updatedTickets.$sourceTicket = res.newTicket;
+        this.$root.$emit('update-ticket', res.updatedTickets);
         this.baseTicket._id = res.newTicket._id;
       });
 
       tasks.catch(err => console.error(err));
     },
     updateStatus() {
-      if(this.technician!="" && this.technician!=undefined){
-        this.ticket.status='IN_PROGRESS';
-      }
+      if(this.ticket.technician) this.ticket.status='IN_PROGRESS';
       if(this.ticket.progress==1) this.ticket.status='COMPLETED';
     }
   },
@@ -358,7 +414,7 @@ export default {
     "ticket.title": 'updateTabTitle',
     "ticket._id": 'updateTabTitle',
     "ticket.progress": 'updateStatus',
-    "technician": 'updateStatus',
+    "ticket.technician": 'updateStatus',
   },
   components: {
     EditForm,

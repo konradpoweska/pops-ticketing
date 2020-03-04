@@ -18,8 +18,8 @@ require('../db').init().then(m => mongoSession = m) // connect
 .then(existingCollections => // add validators to existing collections or new ones
   Promise.all(validatorsFor.map(c =>
     existingCollections.includes(c) ?
-      mongoSession.db.command({ collMod: c, validator: require('../schemas/'+c) })
-    : mongoSession.db.createCollection(c, { validator: require('../schemas/'+c) })
+      mongoSession.db.command({ collMod: c, validator: require('../schemas/'+c).validator })
+    : mongoSession.db.createCollection(c, { validator: require('../schemas/'+c).validator })
   ))
 )
 

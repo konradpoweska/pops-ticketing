@@ -3,7 +3,10 @@ const doesNotExist = { $exists: false };
 const isDate = { $type: 'date' };
 const isDateOrNull = prop => ({ $or: [ { [prop]: isDate }, { [prop]: null } ] })
 
-module.exports = {
+const statusValues = ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CLOSED_SUCCESS', 'CLOSED_ABORTED', 'DELETED'];
+
+module.exports.statusValues = statusValues;
+module.exports.validator = {
   $jsonSchema: {
     bsonType: 'object',
     required: ['_id', 'status', 'title', 'creator', 'category', 'created', 'lastEdit', 'type',
@@ -15,7 +18,7 @@ module.exports = {
       created: {},
       lastEdit: {},
       creator: { bsonType: 'string' },
-      status: { enum: ['OPEN', 'IN_PROGRESS', 'COMPLETED', 'CLOSED_SUCCESS', 'CLOSED_ABORTED', 'DELETED'] },
+      status: { enum: statusValues },
       title: { bsonType: 'string' },
       type: { enum: ['I', 'Q'] },
       client: { bsonType: 'string' },

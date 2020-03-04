@@ -1,4 +1,4 @@
-{"$jsonSchema": {
+{"validator":{"$jsonSchema": {
   "bsonType": "object",
   "required": ["name", "priority", "email", "locations", "mainLocation", "requesters"],
   "additionalProperties": false,
@@ -39,4 +39,4 @@
     }
 
   }
-}}
+}}}
