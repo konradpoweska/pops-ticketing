@@ -11,7 +11,7 @@
             Dernière modification le {{ new Date(ticket.lastEdit).toLocaleString('fr') }}.
           </div>
 
-        <div v-if="ticket.parentTicket">
+        <div v-if="parentTicket">
           Ticket parent&nbsp;:
           <a href="#" @click="$root.$emit('open-tab', { type: 'Ticket', data: { baseTicket: { _id: ticket.parentTicket } } })">
             #{{ parentTicket._id }} - {{ parentTicket.title }}
@@ -250,6 +250,7 @@ export default {
       newRequester: {},
       subTicketsTableFields,
       subTickets: undefined,
+      parentTicket: undefined,
       technicians: []
     }
   },
@@ -308,8 +309,13 @@ export default {
   },
   methods: {
     initTicket() {
-      if(this.isNew)
+      if(this.isNew) {
         this.ticket = cloneDeep(this.baseTicket);
+        if('parentTicket' in this.baseTicket)
+          fetch('/api/tickets/'+this.baseTicket.parentTicket)
+          .then(res => res.json())
+          .then(res => this.parentTicket = res);
+      }
       else
         fetch('/api/tickets/'+this.baseTicket._id)
         .then(res => res.json())

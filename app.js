@@ -12,14 +12,14 @@ app.use("/api/", api);
 
 
 // Serve UI content
-if(process.env.NODE_ENV == "production" || process.argv.indexOf('--static') >= 0) {
-  app.use(express.static('dist'));
-}
-else {
+
+if(process.argv.includes('--hmr')) {
   const Bundler = require('parcel-bundler');
   const bundler = new Bundler("src/index.html");
   app.use(bundler.middleware());
 }
+else
+  app.use(express.static('dist'));
 
 
 // Listen

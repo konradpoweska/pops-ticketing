@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const e = require('./httpErrors');
-const isEqual = require('lodash/isEqual');
+const isEqual = require('lodash.isequal');
 const statusValues = require('./schemas/tickets').statusValues;
 
 var db;
